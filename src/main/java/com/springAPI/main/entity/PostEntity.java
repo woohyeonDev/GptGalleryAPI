@@ -1,16 +1,24 @@
 package com.springAPI.main.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import lombok.*;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
+@Builder
 @Table(name = "user_post", schema = "NEOIB")
 @Getter
 @Setter
+@JsonIdentityInfo(
+        generator = ObjectIdGenerators.PropertyGenerator.class,
+        property = "id"
+)
 public class PostEntity implements Serializable {
 
     @Id
@@ -28,15 +36,18 @@ public class PostEntity implements Serializable {
     @Column(name = "content", nullable = false )
     private String content;
 
+    @Column(name = "link", nullable = false )
+    private String link;
+
     @Column(name = "post_date" , nullable = false)
     private LocalDateTime postDate;
 
     @Column(name = "last_id" , nullable = false)
-    private LocalDateTime lastId;
+    private String lastId;
 
     @Column(name = "last_date" , nullable = false)
     private LocalDateTime lastDate;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.REMOVE)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnswerEntity> answerList;
 }
