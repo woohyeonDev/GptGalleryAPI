@@ -1,5 +1,6 @@
 package com.springAPI.main.service.impl;
 
+import com.springAPI.main.converter.UserConverter;
 import com.springAPI.main.dto.UserDto;
 import com.springAPI.main.entity.UserEntity;
 import com.springAPI.main.repository.UserRepository;
@@ -26,25 +27,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserEntity save(UserDto userDto) {
-        if (userDto.getEmail() == null || userDto.getName() == null) {
-            throw new InvalidDataAccessApiUsageException("User email and name must not be null");
-        }
-
         UserEntity userEntity = userRepository.findByEmail(userDto.getEmail())
-                .map(existingUser -> {
-                    // Update existing user details
-                    BeanUtils.copyProperties(userDto, existingUser, "id", "joinDate");
-                    existingUser.setLastDate(LocalDateTime.now()); // Assume this field is not in UserDto
-                    return existingUser;
-                })
-                .orElseGet(() -> {
-                    // Create new user
-                    UserEntity newUser = new UserEntity();
-                    BeanUtils.copyProperties(userDto, newUser);
-                    newUser.setJoinDate(LocalDateTime.now()); // Setting join date for new user
-                    newUser.setLastDate(LocalDateTime.now()); // Setting last date for new user
-                    return newUser;
-                });
+                .map(existingUser -> UserConverter.updateUserEntityFromDto(userDto, existingUser))
+                .orElseGet(() -> UserConverter.createUserEntityFromDto(userDto));
 
         return userRepository.save(userEntity);
     }

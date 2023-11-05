@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,9 +23,6 @@ public class PostController {
     @GetMapping
     public ResponseEntity<List<PostDto>> getAllPosts() {
         List<PostDto> posts = postService.findAllPosts();
-        if(posts.isEmpty()){
-            return ResponseEntity.ok().body(Collections.emptyList());
-        }
         return ResponseEntity.ok(posts);
     }
 
@@ -34,13 +32,13 @@ public class PostController {
     }
 
     @PostMapping
-    public PostEntity createPost(@RequestBody PostDto post) {
-        return postService.save(post);
+    public PostEntity createPost(@Valid @RequestBody PostDto post) {
+        return postService.create(post);
     }
 
     @PutMapping("/{id}")
-    public PostEntity updatePost(@PathVariable Long id, @RequestBody PostDto post) {
-        return postService.save(post);
+    public PostEntity updatePost(@PathVariable Long id,@Valid @RequestBody PostDto post) {
+        return postService.update(post);
     }
 
     @DeleteMapping("/{id}")

@@ -1,5 +1,6 @@
 package com.springAPI.main.service.impl;
 
+import com.springAPI.main.converter.PostConverter;
 import com.springAPI.main.dto.PostDto;
 import com.springAPI.main.dto.UserDto;
 import com.springAPI.main.entity.PostEntity;
@@ -7,10 +8,12 @@ import com.springAPI.main.entity.UserEntity;
 import com.springAPI.main.repository.PostRepository;
 import com.springAPI.main.repository.UserRepository;
 import com.springAPI.main.service.PostService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,33 +27,34 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
 
     @Override
-    public PostEntity save(PostDto post) {
-        UserDto user = post.getUser();
-        Optional<UserEntity> existingUserOpt = userRepository.findByEmail(user.getEmail());
-        if(existingUserOpt.isPresent()){
-            UserEntity userEntity = existingUserOpt.get();
-            PostEntity postEntity = PostEntity.builder()
-                    .user(userEntity)
-                    .title(post.getTitle())
-                    .content(post.getContent())
-                    .link(post.getLink())
-                    .postDate(LocalDateTime.now())
-                    .lastId(user.getEmail())
-                    .lastDate(LocalDateTime.now())
-                    .build();
-            return postRepository.save(postEntity);
-        }else{
-            PostEntity postEntity = PostEntity.builder()
-                    .title(post.getTitle())
-                    .content(post.getContent())
-                    .link(post.getLink())
-                    .postDate(LocalDateTime.now())
-                    .lastId("anonymous")
-                    .lastDate(LocalDateTime.now())
-                    .build();
-            return postRepository.save(postEntity);
-        }
+    @Transactional
+    public PostEntity save(PostDto postDto) {
+        UserDto user = postDto.getUser();
+        UserEntity userEntity = userRepository.findByEmail(user.getEmail())
+                .orElseGet(() -> null);
+        PostEntity postEntity = postRepository.findById(postDto.getId())
+                .map(existingPost->PostConverter.updatePostEntityFromDto(postDto,existingPost))
+                .orElseGet(()->PostConverter.createPostEntityFromDto(postDto,userEntity));
+        return postRepository.save(postEntity);
+    }
+    @Override
+    @Transactional
+    public PostEntity create(PostDto postDto) {
+        UserDto user = postDto.getUser();
+        UserEntity userEntity = userRepository.findByEmail(user.getEmail())
+                .orElseGet(() -> null);
+        PostEntity postEntity = PostConverter.createPostEntityFromDto(postDto,userEntity);
+        return postRepository.save(postEntity);
+    }
 
+    @Override
+    @Transactional
+    public PostEntity update(PostDto postDto) {
+        UserDto user = postDto.getUser();
+        PostEntity postEntity = postRepository.findById(postDto.getId())
+                .map(existingPost->PostConverter.updatePostEntityFromDto(postDto,existingPost))
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with id: " + postDto.getId()));
+        return postRepository.save(postEntity);
     }
 
     @Override
@@ -71,26 +75,8 @@ public class PostServiceImpl implements PostService {
     public List<PostDto> findAllPosts() {
         List<PostEntity> postEntities = postRepository.findAll();
         return postEntities.stream()
-                .map(this::convertToDTO)
+                .map(PostConverter::convertToPostDto)
                 .collect(Collectors.toList());
-    }
-    private PostDto convertToDTO(PostEntity postEntity) {
-        PostDto postDto = new PostDto();
-        postDto.setId(postEntity.getId());
-        postDto.setTitle(postEntity.getTitle());
-        postDto.setContent(postEntity.getContent());
-        postDto.setLink(postEntity.getLink());
-
-        if (postEntity.getUser() != null) {
-            UserDto userDto = new UserDto();
-            userDto.setName(postEntity.getUser().getName());
-            userDto.setEmail(postEntity.getUser().getEmail());
-            userDto.setImage(postEntity.getUser().getImg());
-
-            postDto.setUser(userDto); // PostDto에 UserDto를 설정합니다.
-        }
-
-        return postDto;
     }
 }
 

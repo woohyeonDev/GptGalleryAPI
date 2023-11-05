@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,14 +34,13 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody UserDto user) {
+    public ResponseEntity<UserEntity> createUser(@Valid  @RequestBody UserDto user) {
         UserEntity savedUser =  userService.save(user);
         return ResponseEntity.ok(savedUser);
     }
 
     @PutMapping("/{id}")
-    public UserEntity updateUser(@PathVariable Long id, @RequestBody UserDto user) {
-        // TODO: Handle the update logic, such as checking if user exists
+    public UserEntity updateUser(@PathVariable Long id, @Valid  @RequestBody UserDto user) {
         return userService.save(user);
     }
 
