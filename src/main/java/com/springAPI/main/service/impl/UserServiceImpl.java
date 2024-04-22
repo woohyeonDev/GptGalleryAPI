@@ -33,8 +33,6 @@ public class UserServiceImpl implements UserService {
 
         return userRepository.save(userEntity);
     }
-
-
     @Override
     public Optional<UserEntity> findById(Long id) {
         return userRepository.findById(id);
@@ -54,6 +52,4 @@ public class UserServiceImpl implements UserService {
     public Optional<UserEntity> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
-
-
 }

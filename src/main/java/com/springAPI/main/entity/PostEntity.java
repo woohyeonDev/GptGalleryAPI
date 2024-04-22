@@ -30,6 +30,9 @@ public class PostEntity implements Serializable {
     @JoinColumn(name = "user_id", nullable = true )
     private UserEntity user;
 
+    @Column(name = "category", nullable = false, columnDefinition = "VARCHAR(255) DEFAULT 'etc'")
+    private String category;
+
     @Column(name = "title", nullable = false )
     private String title;
 
@@ -38,6 +41,9 @@ public class PostEntity implements Serializable {
 
     @Column(name = "link", nullable = false )
     private String link;
+
+    @Column(name = "post_id" , nullable = false)
+    private String postId;
 
     @Column(name = "post_date" , nullable = false)
     private LocalDateTime postDate;
@@ -50,4 +56,10 @@ public class PostEntity implements Serializable {
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<AnswerEntity> answerList;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PostReactionEntity> postReactions;
+
+    @Column(name = "delete_yn", nullable = false, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    private String deleteYn;
 }

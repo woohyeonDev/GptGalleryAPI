@@ -39,27 +39,31 @@ public class PostServiceImpl implements PostService {
     }
     @Override
     @Transactional
-    public PostEntity create(PostDto postDto) {
+    public PostDto create(PostDto postDto) {
         UserDto user = postDto.getUser();
         UserEntity userEntity = userRepository.findByEmail(user.getEmail())
                 .orElseGet(() -> null);
         PostEntity postEntity = PostConverter.createPostEntityFromDto(postDto,userEntity);
-        return postRepository.save(postEntity);
+        PostEntity savePost = postRepository.save(postEntity);
+        return PostConverter.convertToPostDto(savePost);
     }
 
     @Override
     @Transactional
-    public PostEntity update(PostDto postDto) {
+    public PostDto update(PostDto postDto) {
         UserDto user = postDto.getUser();
         PostEntity postEntity = postRepository.findById(postDto.getId())
                 .map(existingPost->PostConverter.updatePostEntityFromDto(postDto,existingPost))
                 .orElseThrow(() -> new EntityNotFoundException("Post not found with id: " + postDto.getId()));
-        return postRepository.save(postEntity);
+        PostEntity savePost = postRepository.save(postEntity);
+        return PostConverter.convertToPostDto(savePost);
     }
 
     @Override
-    public Optional<PostEntity> findById(Long id) {
-        return postRepository.findById(id);
+    public PostDto findById(Long id) {
+        return postRepository.findById(id)
+                .map(PostConverter::convertToPostDto)
+                .orElseThrow(() -> new EntityNotFoundException("Post not found with id " + id));
     }
 
     @Override
@@ -72,6 +76,7 @@ public class PostServiceImpl implements PostService {
         postRepository.deleteById(id);
     }
 
+    @Override
     public List<PostDto> findAllPosts() {
         List<PostEntity> postEntities = postRepository.findAll();
         return postEntities.stream()

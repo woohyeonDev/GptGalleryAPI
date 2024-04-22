@@ -27,18 +27,21 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public PostEntity getPostById(@PathVariable Long id) {
-        return postService.findById(id).orElse(null);
+    public ResponseEntity<PostDto> getPostById(@PathVariable Long id) {
+        PostDto postDto = postService.findById(id);
+        return ResponseEntity.ok(postDto);
     }
 
     @PostMapping
-    public PostEntity createPost(@Valid @RequestBody PostDto post) {
-        return postService.create(post);
+    public ResponseEntity<PostDto> createPost(@Valid @RequestBody PostDto post) {
+       PostDto postDto = postService.create(post);
+       return ResponseEntity.ok(postDto);
     }
 
     @PutMapping("/{id}")
-    public PostEntity updatePost(@PathVariable Long id,@Valid @RequestBody PostDto post) {
-        return postService.update(post);
+    public ResponseEntity<PostDto> updatePost(@PathVariable Long id,@Valid @RequestBody PostDto post) {
+        PostDto postDto = postService.update(post);
+        return ResponseEntity.ok(postDto);
     }
 
     @DeleteMapping("/{id}")

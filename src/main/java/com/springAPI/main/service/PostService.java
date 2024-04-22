@@ -9,9 +9,9 @@ import java.util.stream.Collectors;
 
 public interface PostService {
     PostEntity save(PostDto post);
-    PostEntity create(PostDto post);
-    PostEntity update(PostDto post);
-    Optional<PostEntity> findById(Long id);
+    PostDto create(PostDto post);
+    PostDto update(PostDto post);
+    PostDto findById(Long id);
     List<PostEntity> findAll();
     void deleteById(Long id);
     List<PostDto> findAllPosts();

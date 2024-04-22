@@ -7,6 +7,7 @@ import lombok.Setter;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "user_answer", schema = "NEOIB")
@@ -23,6 +24,10 @@ public class AnswerEntity implements Serializable {
     private Long id;
 
     @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true )
+    private UserEntity user;
+
+    @ManyToOne
     @JoinColumn(name = "post_id", nullable = false )
     private PostEntity post;
 
@@ -37,4 +42,17 @@ public class AnswerEntity implements Serializable {
 
     @Column(name = "last_date" , nullable = false)
     private LocalDateTime lastDate;
+
+    @OneToMany(mappedBy = "answer", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AnswerReactionEntity> answerReactions;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private AnswerEntity parent; // 부모 댓글
+
+    @OneToMany(mappedBy = "parent")
+    private List<AnswerEntity> replies; // 이 댓글의 대댓글들
+
+    @Column(name = "delete_yn", nullable = false, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    private String deleteYn;
 }
